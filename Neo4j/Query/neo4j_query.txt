@@ -1,0 +1,68 @@
+CONSULTA 1: Mostrar todas las publicaciones de la base de datos. 
+
+NEO4J
+MATCH (p:Publication)
+RETURN p 
+LIMIT 400000
+
+
+CONSULTA 2:Mostrar todos los artículos en libros. 
+
+MATCH (p:Publication)
+WHERE p.type = "incollection"
+RETURN p AS Incollections
+
+
+CONSULTA 3: Publicaciones entre los años 1990 y 2000. 
+
+MATCH (p:Publication)
+WHERE toInteger(p.year)>= 1990 AND toInteger(p.year) <= 2000
+RETURN p AS Publications_1990_2000
+
+
+CONSULTA 4: Número de artículos en la base de datos. 
+
+MATCH (p:Publication)
+WHERE p.type = "article"
+RETURN count(p) AS Number_of_Articles
+
+
+CONSULTA 5: Publicaciones de un autor concreto por año.
+
+MATCH (p:Publication)-[r:Has_Author]->(a:Author{name:"Lila Kari"})
+RETURN count(p.title) AS Publications, p.year
+ORDER BY p.year
+
+CONSULTA 6: Número de documentos con más de 3 autores. 
+
+MATCH (p:Publication) -[r:Has_Author]-> (a:Author)
+WITH p, count(a) AS Num_Authors
+WHERE Num_Authors > 3
+RETURN count(p)
+
+
+CONSULTA 7: Coautores de un autor concreto. 
+
+MATCH (p:Publication)-[r:Has_Author]->(a:Author{name:"Lila Kari"}), (p:Publication)-->(o:Author)
+WHERE o.name <> "Lila Kari"
+RETURN DISTINCT o.name
+
+CONSULTA 8: Autores que sólo han publicado un único tipo de documento. 	
+
+MATCH (p:Publication) -[r:Has_Author]-> (a:Author)
+WITH a, count(DISTINCT p.type) as Types
+WHERE Types = 1
+RETURN a.name
+
+
+
+
+
+
+
+
+
+
+
+
+
