@@ -1,0 +1,51 @@
+CONSULTA 1: Mostrar todas las publicaciones de la base de datos. 
+
+    db.documents.find()
+
+CONSULTA 2:Mostrar todos los artículos en libros. 
+
+  db.documents.find({"type":"incollection"})
+
+CONSULTA 3: Publicaciones entre los años 1990 y 2000. 
+
+    db.documents.find({$and:[
+					{"year":{"$gte":1990}},
+					{"year":{"$lte":2000}}]})
+
+CONSULTA 4: Número de artículos en la base de datos. 
+
+    db.documents.find({"type":"article"}).count()
+
+CONSULTA 5: Publicaciones de un autor concreto por año.
+ 
+    db.documents.aggregate([{$match:{"author.Author":"Lila Kari"}}, 
+						{$group:{"_id":"$year","total":{$sum:1}}},
+						{$sort:{"_id":1}}],
+						{allowDiskUse:true})
+
+CONSULTA 6: Número de documentos con más de 3 autores.
+
+	db.documents.aggregate([{$unwind:"$author"},
+							{$group:{"_id":"$title","Authors":{$sum:1}}},
+							{$match:{"Authors":{$gt:3}}},
+							{$count:"Documentos"}],
+							{allowDiskUse:true})	
+
+CONSULTA 7: Coautores de un autor concreto. 
+
+    db.documents.aggregate([{$match:{"author.Author":"Lila Kari"}},
+							{$unwind:"$author"},
+							{$group:{"_id":"$author.Author"}},
+							{$match:{"_id":{"$ne":"Lila Kari"}}}])										
+CONSULTA 8: Autores que sólo han publicado un único tipo de documento. 	
+ 
+	db.documents.aggregate([{$unwind:"$author"},
+							{$group:{"_id":"$author.Author","Tipos":{$addToSet:"$type"}}},
+							{$out:"AutoresTipos"}],
+							{allowDiskUse:true})
+
+	db.AutoresTipos.aggregate([{$unwind:"$Tipos"},
+								{$group:{"_id":"$_id","types":{$sum:1},"unique_type":{$push:"$Tipos"}}},
+								{$match:{"types":{$eq:1}}},
+								{$count:"Resultado"}],
+								{allowDiskUse:true})									
